@@ -9,7 +9,7 @@ import time
 # Kind of IA
 IA_JOSEGALARZE = -1
 RANDOM = 0
-# MINMAX = 1
+MINMAX = 1
 # Q-Learning = 2
 
 WHITE = " ⚫️ "
@@ -24,6 +24,8 @@ DANGEROUS_POSITIONS = [
     (7, 1), (7, 6)
 ]
 CORNER_POSITIONS = [(0, 0), (7, 0), (7, 7), (0, 7)]
+ALPHABETADEPTH = 5
+size = 8
 
 
 class Board():
@@ -165,6 +167,96 @@ class Board():
                     score += 1
         return score
 
+
+    def alpha_beta_search(self, player1, player2):
+        print("alpah_beta")
+        boardAlgo = Board()
+        boardAlgo.board = copy.deepcopy(self.board)
+        moves = []
+        print(moves)
+        for i in range(ALPHABETADEPTH+1):
+            moves.append([0, 0])
+        print(moves)
+        boardAlgo.max_value(player1, player2, -200999999, 200999999, moves, 0)
+        print(moves)
+        move = moves[0][0], moves[0][1]
+        return move
+
+    def max_value(self, player1, player2, alpha, beta, moves, cmpt):
+        max_utility_cmpt = 0
+        print("max_val")
+        if self.is_full() or cmpt >= ALPHABETADEPTH :
+            return self.get_player_score(player1)
+        utility = -9999999999
+        print(utility)
+        if not self.has_valid_moves(player1):
+            cmpt += 1
+            utility = max(utility, self.min_value(player2, player1, alpha, beta, moves, cmpt))
+            cmpt -= 1
+            if utility > max_utility_cmpt:
+                moves[cmpt][0] = 0
+                moves[cmpt][1] = 0
+            if utility >= beta:
+                return utility
+        else:
+            for i in range(size):
+                for j in range(size):
+                    move = j, i
+                    print(move)
+                    if self.is_valid_move(player1, move):
+                        oldBoard = Board()
+                        oldBoard.board = copy.deepcopy(self.board)
+                        self.put_stone(player1, move)
+                        cmpt += 1
+                        utility = max(utility, self.min_value(player2, player1, alpha, beta, moves, cmpt))
+                        print(utility)
+                        cmpt -= 1
+                        if utility > max_utility_cmpt:
+                            max_utility_cmpt = utility
+                            moves[cmpt] = move
+                            print(moves[cmpt])
+                        self = oldBoard
+                        if utility >= beta:
+                            return utility
+                        alpha = max(alpha, utility)
+
+    def min_value(self, player1, player2, alpha, beta, moves, cmpt):
+        min_utility_cmpt = 0
+        if self.is_full() or cmpt >= ALPHABETADEPTH :
+            return self.get_player_score(player1)
+        utility = 9999999999
+        if not self.has_valid_moves(player1):
+            cmpt += 1
+            utility = min(utility, self.max_value(player2, player1, alpha, beta, moves, cmpt))
+            cmpt -= 1
+            if utility < min_utility_cmpt:
+                moves[cmpt][0] = 0
+                moves[cmpt][1] = 0
+            if utility <= alpha:
+                return utility
+        else:
+            for i in range(size):
+                for j in range(size):
+                    move = j, i
+                    if self.is_valid_move(player1, move):
+                        oldBoard = Board()
+                        oldBoard.board = copy.deepcopy(self.board)
+                        self.put_stone(player1, move)
+                        cmpt += 1
+                        utility = min(utility, self.max_value(player2, player1, alpha, beta, moves, cmpt))
+                        cmpt -= 1
+                        if utility < min_utility_cmpt:
+                            min_utility_cmpt = utility
+                            moves[cmpt][0] = j
+                            moves[cmpt][1] = i
+                        self = oldBoard
+                        if utility <= alpha:
+                            return utility
+                        beta = max(beta, utility)
+
+
+
+
     def get_best_next_move_from_josegalarza(self, player):
         """
         Returns best next move for the `player` based on max score.
@@ -218,11 +310,20 @@ class Player():
         self.is_bot = is_bot
         self.level = level
 
-    def bot_move(self, board):
+    def inversePlayer(self, players):
+        if self == players[0]:
+            return players[1]
+        else :
+            return players[0]
+
+
+    def bot_move(self, board, players):
         if self.level == IA_JOSEGALARZE:
             return board.get_best_next_move_from_josegalarza(self)
         elif self.level == RANDOM:
             return board.get_random_move(self)
+        elif self.level == MINMAX:
+            return board.alpha_beta_search(self, self.inversePlayer(players))
         else:
             raise("Error: Invalid IA level !")
 
@@ -281,7 +382,7 @@ Score: {p0_score} vs. {p1_score}
                             move = player.get_move()
                         else:
                             print(f"Player {player.color} is thinking...")
-                            move = player.bot_move(self.board)
+                            move = player.bot_move(self.board, self.players)
                         if type(move) is tuple:
                             self.board.put_stone(player, move)
                             break
@@ -309,12 +410,13 @@ Score: {p0_score} vs. {p1_score}
         if players != "2":
             print(f"Levels of IA\n "
                   f"{IA_JOSEGALARZE} : IA_from_josegalarza\n"
-                  f"{RANDOM} : Random\n")
+                  f"{RANDOM} : Random\n"
+                  f"{MINMAX} : MinMax\n")
             for i in range(2-int(players)):
                 while True:
                     try:
                         lvl = input(f"Level of IA_{i+1} : ").strip()
-                        if lvl in [str(IA_JOSEGALARZE), str(RANDOM)]:
+                        if lvl in [str(IA_JOSEGALARZE), str(RANDOM), str(MINMAX)]:
                             break
                     except KeyboardInterrupt:
                         sys.exit(1)
