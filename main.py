@@ -199,26 +199,23 @@ class Board():
             if utility >= beta:
                 return utility
         else:
-            for i in range(size):
-                for j in range(size):
-                    move = j, i
-                    print(move)
-                    if self.is_valid_move(player1, move):
-                        oldBoard = Board()
-                        oldBoard.board = copy.deepcopy(self.board)
-                        self.put_stone(player1, move)
-                        cmpt += 1
-                        utility = max(utility, self.min_value(player2, player1, alpha, beta, moves, cmpt))
-                        print(utility)
-                        cmpt -= 1
-                        if utility > max_utility_cmpt:
-                            max_utility_cmpt = utility
-                            moves[cmpt] = move
-                            print(moves[cmpt])
-                        self = oldBoard
-                        if utility >= beta:
-                            return utility
-                        alpha = max(alpha, utility)
+            for move in self._get_valid_moves(player1):
+                print(move)
+                oldBoard = Board()
+                oldBoard.board = copy.deepcopy(self.board)
+                self.put_stone(player1, move)
+                cmpt += 1
+                utility = max(utility, self.min_value(player2, player1, alpha, beta, moves, cmpt))
+                print(utility)
+                cmpt -= 1
+                if utility > max_utility_cmpt:
+                    max_utility_cmpt = utility
+                    moves[cmpt] = move
+                    print(moves[cmpt])
+                self = oldBoard
+                if utility >= beta:
+                    return utility
+                alpha = max(alpha, utility)
 
     def min_value(self, player1, player2, alpha, beta, moves, cmpt):
         min_utility_cmpt = 0
@@ -235,24 +232,21 @@ class Board():
             if utility <= alpha:
                 return utility
         else:
-            for i in range(size):
-                for j in range(size):
-                    move = j, i
-                    if self.is_valid_move(player1, move):
-                        oldBoard = Board()
-                        oldBoard.board = copy.deepcopy(self.board)
-                        self.put_stone(player1, move)
-                        cmpt += 1
-                        utility = min(utility, self.max_value(player2, player1, alpha, beta, moves, cmpt))
-                        cmpt -= 1
-                        if utility < min_utility_cmpt:
-                            min_utility_cmpt = utility
-                            moves[cmpt][0] = j
-                            moves[cmpt][1] = i
-                        self = oldBoard
-                        if utility <= alpha:
-                            return utility
-                        beta = max(beta, utility)
+            for move in self._get_valid_moves(player1):
+                oldBoard = Board()
+                oldBoard.board = copy.deepcopy(self.board)
+                self.put_stone(player1, move)
+                cmpt += 1
+                utility = min(utility, self.max_value(player2, player1, alpha, beta, moves, cmpt))
+                cmpt -= 1
+                if utility < min_utility_cmpt:
+                    min_utility_cmpt = utility
+                    moves[cmpt][0] = j
+                    moves[cmpt][1] = i
+                self = oldBoard
+                if utility <= alpha:
+                    return utility
+                beta = max(beta, utility)
 
 
 
