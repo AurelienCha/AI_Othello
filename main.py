@@ -175,7 +175,7 @@ class Board():
         moves = []
         print(moves)
         for i in range(ALPHABETADEPTH+1):
-            moves.append([0, 0])
+            moves.append((0, 0))
         print(moves)
         boardAlgo.max_value(player1, player2, -200999999, 200999999, moves, 0)
         print(moves)
@@ -194,8 +194,7 @@ class Board():
             utility = max(utility, self.min_value(player2, player1, alpha, beta, moves, cmpt))
             cmpt -= 1
             if utility > max_utility_cmpt:
-                moves[cmpt][0] = 0
-                moves[cmpt][1] = 0
+                moves[cmpt] = (0, 0)
             if utility >= beta:
                 return utility
         else:
@@ -227,8 +226,7 @@ class Board():
             utility = min(utility, self.max_value(player2, player1, alpha, beta, moves, cmpt))
             cmpt -= 1
             if utility < min_utility_cmpt:
-                moves[cmpt][0] = 0
-                moves[cmpt][1] = 0
+                moves[cmpt] = (0, 0)
             if utility <= alpha:
                 return utility
         else:
@@ -241,8 +239,7 @@ class Board():
                 cmpt -= 1
                 if utility < min_utility_cmpt:
                     min_utility_cmpt = utility
-                    moves[cmpt][0] = j
-                    moves[cmpt][1] = i
+                    moves[cmpt] = move
                 self = oldBoard
                 if utility <= alpha:
                     return utility
