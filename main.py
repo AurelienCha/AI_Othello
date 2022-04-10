@@ -24,7 +24,7 @@ DANGEROUS_POSITIONS = [
     (7, 1), (7, 6)
 ]
 CORNER_POSITIONS = [(0, 0), (7, 0), (7, 7), (0, 7)]
-ALPHABETADEPTH = 5
+ALPHABETADEPTH = 6
 size = 8
 
 
@@ -169,26 +169,20 @@ class Board():
 
 
     def alpha_beta_search(self, player1, player2):
-        print("alpah_beta")
         boardAlgo = Board()
         boardAlgo.board = copy.deepcopy(self.board)
         moves = []
-        print(moves)
         for i in range(ALPHABETADEPTH+1):
             moves.append((0, 0))
-        print(moves)
         boardAlgo.max_value(player1, player2, -200999999, 200999999, moves, 0)
-        print(moves)
-        move = moves[0][0], moves[0][1]
+        move = moves[0]
         return move
 
     def max_value(self, player1, player2, alpha, beta, moves, cmpt):
         max_utility_cmpt = 0
-        print("max_val")
         if self.is_full() or cmpt >= ALPHABETADEPTH :
             return self.get_player_score(player1)
         utility = -9999999999
-        print(utility)
         if not self.has_valid_moves(player1):
             cmpt += 1
             utility = max(utility, self.min_value(player2, player1, alpha, beta, moves, cmpt))
@@ -199,22 +193,20 @@ class Board():
                 return utility
         else:
             for move in self._get_valid_moves(player1):
-                print(move)
                 oldBoard = Board()
                 oldBoard.board = copy.deepcopy(self.board)
                 self.put_stone(player1, move)
                 cmpt += 1
                 utility = max(utility, self.min_value(player2, player1, alpha, beta, moves, cmpt))
-                print(utility)
                 cmpt -= 1
                 if utility > max_utility_cmpt:
                     max_utility_cmpt = utility
                     moves[cmpt] = move
-                    print(moves[cmpt])
                 self = oldBoard
                 if utility >= beta:
                     return utility
-                alpha = max(alpha, utility)
+
+        return max(alpha, utility)
 
     def min_value(self, player1, player2, alpha, beta, moves, cmpt):
         min_utility_cmpt = 0
@@ -243,7 +235,7 @@ class Board():
                 self = oldBoard
                 if utility <= alpha:
                     return utility
-                beta = max(beta, utility)
+        return min(beta, utility)
 
 
 
@@ -310,10 +302,13 @@ class Player():
 
     def bot_move(self, board, players):
         if self.level == IA_JOSEGALARZE:
+            print("josegalarze")
             return board.get_best_next_move_from_josegalarza(self)
         elif self.level == RANDOM:
+            print("random")
             return board.get_random_move(self)
         elif self.level == MINMAX:
+            print("minmax")
             return board.alpha_beta_search(self, self.inversePlayer(players))
         else:
             raise("Error: Invalid IA level !")
