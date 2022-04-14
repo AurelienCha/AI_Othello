@@ -10,6 +10,8 @@ DEBUG = False
 PRUNING = False
 INFINITY = 999999999
 
+DEPTH = 6
+
 # Kind of IA
 IA_JOSEGALARZE = -1
 RANDOM = 0
@@ -28,8 +30,6 @@ DANGEROUS_POSITIONS = [
     (7, 1), (7, 6)
 ]
 CORNER_POSITIONS = [(0, 0), (7, 0), (7, 7), (0, 7)]
-ALPHABETADEPTH = 6
-size = 8
 
 
 class Board():
@@ -176,7 +176,7 @@ class Board():
     def alpha_beta_search(self, player, adversary):
         boardAlgo = Board()
         boardAlgo.board = copy.deepcopy(self.board)
-        moves = [(0,0) for _ in range(ALPHABETADEPTH)]
+        moves = [(0,0) for _ in range(DEPTH)]
         boardAlgo.max_value(player, adversary, -INFINITY, INFINITY, moves, 0)
         return moves[0]
 
@@ -184,7 +184,7 @@ class Board():
         if DEBUG: print(cmpt, cmpt*"    ", "Max", player.color, "alpha=", alpha, "beta=", beta)
 
         # If end of recursion/tree return evaluation function
-        if cmpt >= ALPHABETADEPTH or self.is_full() or not self.has_valid_moves(player):
+        if cmpt >= DEPTH or self.is_full() or not self.has_valid_moves(player):
             return self.get_player_score(player)
 
         # Loops over possibles moves
@@ -212,7 +212,7 @@ class Board():
         if DEBUG: print(cmpt, cmpt*"    ", "min", player.color, "moves=", moves, "alpha=", alpha, "beta=", beta)
 
         # If end of recursion/tree return evaluation function
-        if cmpt >= ALPHABETADEPTH or self.is_full() or not self.has_valid_moves(player):
+        if cmpt >= DEPTH or self.is_full() or not self.has_valid_moves(player):
             return self.get_player_score(player)
 
         # Loops over possibles moves
