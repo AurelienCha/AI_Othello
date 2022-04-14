@@ -6,6 +6,10 @@ import random
 import sys
 import time
 
+DEBUG = False
+PRUNING = False
+INFINITY = 999999999
+
 # Kind of IA
 IA_JOSEGALARZE = -1
 RANDOM = 0
@@ -35,6 +39,7 @@ class Board():
         self.board[3][3] = BLACK
         self.board[4][3] = WHITE
         self.board[4][4] = BLACK
+
 
     def __str__(self):
         b = self.board
@@ -168,74 +173,68 @@ class Board():
         return score
 
 
-    def alpha_beta_search(self, player1, player2):
+    def alpha_beta_search(self, player, adversary):
         boardAlgo = Board()
         boardAlgo.board = copy.deepcopy(self.board)
-        moves = []
-        for i in range(ALPHABETADEPTH+1):
-            moves.append((0, 0))
-        boardAlgo.max_value(player1, player2, -200999999, 200999999, moves, 0)
-        move = moves[0]
-        return move
+        moves = [(0,0) for _ in range(ALPHABETADEPTH)]
+        boardAlgo.max_value(player, adversary, -INFINITY, INFINITY, moves, 0)
+        return moves[0]
 
-    def max_value(self, player1, player2, alpha, beta, moves, cmpt):
-        max_utility_cmpt = 0
-        if self.is_full() or cmpt >= ALPHABETADEPTH :
-            return self.get_player_score(player1)
-        utility = -9999999999
-        if not self.has_valid_moves(player1):
-            cmpt += 1
-            utility = max(utility, self.min_value(player2, player1, alpha, beta, moves, cmpt))
-            cmpt -= 1
-            if utility > max_utility_cmpt:
-                moves[cmpt] = (0, 0)
-            if utility >= beta:
+    def max_value(self, player, adversary, alpha, beta, moves, cmpt):
+        if DEBUG: print(cmpt, cmpt*"    ", "Max", player.color, "alpha=", alpha, "beta=", beta)
+
+        # If end of recursion/tree return evaluation function
+        if cmpt >= ALPHABETADEPTH or self.is_full() or not self.has_valid_moves(player):
+            return self.get_player_score(player)
+
+        # Loops over possibles moves
+        for move in self._get_valid_moves(player):
+            if DEBUG: print(cmpt, cmpt*"    ", "move:", player.color, move)
+            # Play the next turn on a copy of the board
+            nextBoard = Board()
+            nextBoard.board = copy.deepcopy(self.board)
+            nextBoard.put_stone(player, move)
+            # Compute recusively the evaluation function (minMax)
+            utility = nextBoard.min_value(adversary, player, alpha, beta, moves, cmpt+1)
+            if DEBUG: print(cmpt, cmpt * "    ", utility >= beta, ":: utility >= beta ::", utility, ">=", beta)
+            if DEBUG: print(cmpt, cmpt * "    ", utility > alpha, ":: utility > alpha ::", utility, ">", alpha)
+            # Pruning if utility out of optimal range
+            if PRUNING and utility >= beta:
+                if DEBUG: print("PRUNING")
                 return utility
-        else:
-            for move in self._get_valid_moves(player1):
-                oldBoard = Board()
-                oldBoard.board = copy.deepcopy(self.board)
-                self.put_stone(player1, move)
-                cmpt += 1
-                utility = max(utility, self.min_value(player2, player1, alpha, beta, moves, cmpt))
-                cmpt -= 1
-                if utility > max_utility_cmpt:
-                    max_utility_cmpt = utility
-                    moves[cmpt] = move
-                self = oldBoard
-                if utility >= beta:
-                    return utility
+            # Update range limit if best (affine range)
+            elif utility > alpha:
+                alpha = utility
+                moves[cmpt] = move
+        return alpha
 
-        return max(alpha, utility)
+    def min_value(self, player, adversary, alpha, beta, moves, cmpt):
+        if DEBUG: print(cmpt, cmpt*"    ", "min", player.color, "moves=", moves, "alpha=", alpha, "beta=", beta)
 
-    def min_value(self, player1, player2, alpha, beta, moves, cmpt):
-        min_utility_cmpt = 0
-        if self.is_full() or cmpt >= ALPHABETADEPTH :
-            return self.get_player_score(player1)
-        utility = 9999999999
-        if not self.has_valid_moves(player1):
-            cmpt += 1
-            utility = min(utility, self.max_value(player2, player1, alpha, beta, moves, cmpt))
-            cmpt -= 1
-            if utility < min_utility_cmpt:
-                moves[cmpt] = (0, 0)
-            if utility <= alpha:
+        # If end of recursion/tree return evaluation function
+        if cmpt >= ALPHABETADEPTH or self.is_full() or not self.has_valid_moves(player):
+            return self.get_player_score(player)
+
+        # Loops over possibles moves
+        for move in self._get_valid_moves(player):
+            if DEBUG: print(cmpt, cmpt*"    ", "move:", player.color, move)
+            # Play the next turn on a copy of the board
+            nextBoard = Board()
+            nextBoard.board = copy.deepcopy(self.board)
+            nextBoard.put_stone(player, move)
+            # Compute recusively the evaluation function (minMax)
+            utility = nextBoard.max_value(adversary, player, alpha, beta, moves, cmpt+1)
+            if DEBUG: print(cmpt, cmpt*"    ", utility <= alpha, ":: utility =< alpha ::", utility, "<=", alpha)
+            if DEBUG: print(cmpt, cmpt*"    ", utility < beta, ":: utility < beta ::", utility, "<", beta)
+            # Pruning if utility out of optimal range
+            if PRUNING and utility <= alpha:
+                if DEBUG: print("PRUNING")
                 return utility
-        else:
-            for move in self._get_valid_moves(player1):
-                oldBoard = Board()
-                oldBoard.board = copy.deepcopy(self.board)
-                self.put_stone(player1, move)
-                cmpt += 1
-                utility = min(utility, self.max_value(player2, player1, alpha, beta, moves, cmpt))
-                cmpt -= 1
-                if utility < min_utility_cmpt:
-                    min_utility_cmpt = utility
-                    moves[cmpt] = move
-                self = oldBoard
-                if utility <= alpha:
-                    return utility
-        return min(beta, utility)
+            # Update range limit if best (affine range)
+            elif utility < beta:
+                beta = utility
+                moves[cmpt] = move
+        return beta
 
 
 
