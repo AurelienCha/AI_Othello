@@ -7,7 +7,7 @@ import sys
 import time
 
 DEBUG = False
-PRUNING = False
+PRUNING = True
 INFINITY = 999999999
 
 DEPTH = 6
