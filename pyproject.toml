@@ -2,7 +2,7 @@
 name = "reversi"
 version = "0.1.0"
 description = "Jeu reversi/othello dans le terminal"
-authors = ["Aurélien Chassagne & Gaelle Frauenkron"]
+authors = ["Aurélien Chassagne & Gaelle Frauenkron & Salma Salmani"]
 license = "MIT"
 
 [tool.poetry.dependencies]
