@@ -1,4 +1,3 @@
-
 import copy
 from itertools import cycle
 import os
@@ -7,16 +6,11 @@ import sys
 import time
 
 DEBUG = False
-PRUNING = True
 INFINITY = 999999999
-
-DEPTH = 6
+DEPTH = 3
 
 # Kind of IA
-IA_JOSEGALARZE = -1
-RANDOM = 0
-MINMAX = 1
-# Q-Learning = 2
+
 
 WHITE = " ⚫️ "
 BLACK = " ⚪️ "
@@ -34,6 +28,7 @@ CORNER_POSITIONS = [(0, 0), (7, 0), (7, 7), (0, 7)]
 
 class Board():
     def __init__(self):
+        self.remaining_round = 60
         self.board = [[EMPTY for i in range(8)] for i in range(8)]
         self.board[3][4] = WHITE
         self.board[3][3] = BLACK
@@ -163,6 +158,7 @@ class Board():
         self.board[x][y] = player.color
         for xi, yi in self._get_flips(player, move):
             self.board[xi][yi] = player.color
+        self.remaining_round -= 1
 
     def get_player_score(self, player):
         score = 0
@@ -176,15 +172,21 @@ class Board():
     def alpha_beta_search(self, player, adversary):
         boardAlgo = Board()
         boardAlgo.board = copy.deepcopy(self.board)
-        moves = [(0,0) for _ in range(DEPTH)]
-        boardAlgo.max_value(player, adversary, -INFINITY, INFINITY, moves, 0)
+        moves = [(0,0) for _ in range(player.depth)]
+        print(player.describe())
+        if player.cost_function=="max" or (player.cost_function=="hybrid" and self.remaining_round <= 2*player.depth):
+            print("MAX")
+            boardAlgo.max_value(player, adversary, -INFINITY, INFINITY, moves, 0, player.depth)
+        elif player.cost_function=="min" or (player.cost_function=="hybrid" and self.remaining_round > 2*player.depth):
+            print("MIN")
+            boardAlgo.min_value(player, adversary, -INFINITY, INFINITY, moves, 0, player.depth)
         return moves[0]
 
-    def max_value(self, player, adversary, alpha, beta, moves, cmpt):
+    def max_value(self, player, adversary, alpha, beta, moves, cmpt, depth):
         if DEBUG: print(cmpt, cmpt*"    ", "Max", player.color, "alpha=", alpha, "beta=", beta)
 
         # If end of recursion/tree return evaluation function
-        if cmpt >= DEPTH or self.is_full() or not self.has_valid_moves(player):
+        if cmpt >= depth or self.is_full() or not self.has_valid_moves(player):
             return self.get_player_score(player)
 
         # Loops over possibles moves
@@ -195,11 +197,11 @@ class Board():
             nextBoard.board = copy.deepcopy(self.board)
             nextBoard.put_stone(player, move)
             # Compute recusively the evaluation function (minMax)
-            utility = nextBoard.min_value(adversary, player, alpha, beta, moves, cmpt+1)
+            utility = nextBoard.min_value(adversary, player, alpha, beta, moves, cmpt+1, depth)
             if DEBUG: print(cmpt, cmpt * "    ", utility >= beta, ":: utility >= beta ::", utility, ">=", beta)
             if DEBUG: print(cmpt, cmpt * "    ", utility > alpha, ":: utility > alpha ::", utility, ">", alpha)
             # Pruning if utility out of optimal range
-            if PRUNING and utility >= beta:
+            if player.pruning and utility >= beta:
                 if DEBUG: print("PRUNING")
                 return utility
             # Update range limit if best (affine range)
@@ -208,11 +210,11 @@ class Board():
                 moves[cmpt] = move
         return alpha
 
-    def min_value(self, player, adversary, alpha, beta, moves, cmpt):
+    def min_value(self, player, adversary, alpha, beta, moves, cmpt, depth):
         if DEBUG: print(cmpt, cmpt*"    ", "min", player.color, "moves=", moves, "alpha=", alpha, "beta=", beta)
 
         # If end of recursion/tree return evaluation function
-        if cmpt >= DEPTH or self.is_full() or not self.has_valid_moves(player):
+        if cmpt >= depth or self.is_full() or not self.has_valid_moves(player):
             return self.get_player_score(player)
 
         # Loops over possibles moves
@@ -223,11 +225,11 @@ class Board():
             nextBoard.board = copy.deepcopy(self.board)
             nextBoard.put_stone(player, move)
             # Compute recusively the evaluation function (minMax)
-            utility = nextBoard.max_value(adversary, player, alpha, beta, moves, cmpt+1)
+            utility = nextBoard.max_value(adversary, player, alpha, beta, moves, cmpt+1, depth)
             if DEBUG: print(cmpt, cmpt*"    ", utility <= alpha, ":: utility =< alpha ::", utility, "<=", alpha)
             if DEBUG: print(cmpt, cmpt*"    ", utility < beta, ":: utility < beta ::", utility, "<", beta)
             # Pruning if utility out of optimal range
-            if PRUNING and utility <= alpha:
+            if player.pruning and utility <= alpha:
                 if DEBUG: print("PRUNING")
                 return utility
             # Update range limit if best (affine range)
@@ -235,42 +237,6 @@ class Board():
                 beta = utility
                 moves[cmpt] = move
         return beta
-
-
-
-
-    def get_best_next_move_from_josegalarza(self, player):
-        """
-        Returns best next move for the `player` based on max score.
-        TODO: Predicts moves up to `look_head` times.
-        TODO: Should care more for strategic positions than just score.
-        """
-        valid_moves = self._get_valid_moves(player)
-        time.sleep(0.25 * (len(valid_moves) + 1))
-        random.shuffle(valid_moves)
-        best_next_move = None
-        max_score = 0
-        # Avoid dangerous positions
-        safe_moves = list(filter(lambda move: move not in DANGEROUS_POSITIONS, valid_moves))
-        if safe_moves:
-            valid_moves = safe_moves
-        for move in valid_moves:
-            # Get the corners
-            if move in CORNER_POSITIONS:
-                return move
-            # Get to the walls
-            elif 0 in move:
-                return move
-            # Get max flip
-            else:
-                tmp_board = Board()
-                tmp_board.board = copy.deepcopy(self.board)  # copy this board
-                tmp_board.put_stone(player, move)
-                score = tmp_board.get_player_score(player)
-                if score > max_score:
-                    max_score = score
-                    best_next_move = move
-        return best_next_move
 
     def get_random_move(self, player):
         return random.choice(self._get_valid_moves(player))
@@ -285,32 +251,26 @@ class Board():
         print()
 
 
-
 class Player():
-    def __init__(self, color, is_bot=0, level=0):
+    def __init__(self, color, type="H", depth=DEPTH, pruning=True, cost="hybrid"):
         self.color = color
-        self.is_bot = is_bot
-        self.level = level
+        self.type = type
+        self.depth = depth
+        self.pruning = pruning
+        self.cost_function = cost
+        # self.growing_depth
+        self.describe()
+
+    def describe(self):
+        print(f"Player {self.color} is {self.type}")
+        if self.type == 'IA':
+            print(f" Depth : {self.depth} \n Pruning : {self.pruning} \n Cost function : {self.cost_function}")
 
     def inversePlayer(self, players):
         if self == players[0]:
             return players[1]
-        else :
-            return players[0]
-
-
-    def bot_move(self, board, players):
-        if self.level == IA_JOSEGALARZE:
-            print("josegalarze")
-            return board.get_best_next_move_from_josegalarza(self)
-        elif self.level == RANDOM:
-            print("random")
-            return board.get_random_move(self)
-        elif self.level == MINMAX:
-            print("minmax")
-            return board.alpha_beta_search(self, self.inversePlayer(players))
         else:
-            raise("Error: Invalid IA level !")
+            return players[0]
 
     def get_move(self):
         # Input move
@@ -335,16 +295,17 @@ class Player():
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, type_1, depth_1, pruning_1, cost_1, type_2, depth_2, pruning_2, cost_2):
         self.board = Board()
-        self.players = [Player(BLACK), Player(WHITE)]
+        self.players = [Player(BLACK, type_1, depth_1, pruning_1, cost_1),
+                        Player(WHITE, type_2, depth_2, pruning_2, cost_2)]
 
     def _print(self):
         """
         Prints the game: the header, notification(s) (if any) and the board
         """
         os.system("cls") # todo operating system dependent
-        header = "Reversi • By @josegalarza (2020)"
+        header = "Reversi"
         p0 = self.players[0]
         p1 = self.players[1]
         p0_score = f"{p0.color}{'%2d' % self.board.get_player_score(p0)}"
@@ -363,11 +324,14 @@ Score: {p0_score} vs. {p1_score}
             if self.board.has_valid_moves(player):
                 while True:
                     try:
-                        if not player.is_bot:
+                        if player.type == 'H':  # Human Player
                             move = player.get_move()
-                        else:
-                            print(f"Player {player.color} is thinking...")
-                            move = player.bot_move(self.board, self.players)
+                        elif player.type == 'R': # Random IA
+                            move = self.board.get_random_move(player)
+                        else: # IA
+                            print(f"Player {player.color} is thinking..")
+                            move = self.board.alpha_beta_search(player, player.inversePlayer(self.players))
+                            print(move)
                         if type(move) is tuple:
                             self.board.put_stone(player, move)
                             break
@@ -381,37 +345,45 @@ Score: {p0_score} vs. {p1_score}
                         pass
         self._print()
 
-    def start(self):
-        while True:
-            try:
-                self._print()
-                players = input("Number of players (0-2)? ").strip()
-                if players in ["0", "1", "2"]:
-                    break
-            except KeyboardInterrupt:
-                sys.exit(1)
-            except Exception:
-                pass
-        if players != "2":
-            print(f"Levels of IA\n "
-                  f"{IA_JOSEGALARZE} : IA_from_josegalarza\n"
-                  f"{RANDOM} : Random\n"
-                  f"{MINMAX} : MinMax\n")
-            for i in range(2-int(players)):
-                while True:
-                    try:
-                        lvl = input(f"Level of IA_{i+1} : ").strip()
-                        if lvl in [str(IA_JOSEGALARZE), str(RANDOM), str(MINMAX)]:
-                            break
-                    except KeyboardInterrupt:
-                        sys.exit(1)
-                    except Exception:
-                        pass
-                self.players[i-1].is_bot = True
-                self.players[i-1].level = int(lvl)
-        self.play()
+
+def extract_player_option(str):
+    if str[0] == 'H':
+        return 'H', None, None, None, None
+    elif str[0] == 'R':
+        return 'R', None, None, None, None
+    else:
+        print(str)
+        depth = ''
+        for c in str:
+            if c.isdigit():
+                depth += c
+            else:
+                break
+        if depth.isdigit():
+            depth = int(depth)
+        else:
+            sys.exit(11)
+
+        if '+' in str: var_depth = False
+        else: var_depth = True
+        if 'P' in str or 'p' in str: pruning = False
+        else: pruning = True
+        if 'min' in str or 'Min' in str or 'MIN' in str: cost = 'min'
+        elif 'max' in str or 'Max' in str or 'MAX' in str: cost = 'max'
+        else: cost = 'hybrid'
+
+        return 'IA', depth, var_depth, pruning, cost
 
 
 if __name__ == '__main__':
-    game = Game()
-    game.start()
+    type_1, depth_1, pruning_1, cost_1, type_2, depth_2, pruning_2, cost_2 = 'H', None, None, None, 'H', None, None, None
+    if len(sys.argv) >= 2:
+        type_1, depth_1, var_depth_1, pruning_1, cost_1 = extract_player_option(sys.argv[1])
+    if len(sys.argv) >= 3:
+        type_2, depth_2, var_depth_2, pruning_2, cost_2 = extract_player_option(sys.argv[2])
+    elif len(sys.argv) > 3:
+        print("Please refers you to the documentation...", file=sys.stderr)
+        sys.exit(1)
+
+    game = Game(type_1, depth_1, pruning_1, cost_1, type_2, depth_2, pruning_2, cost_2)
+    game.play()
