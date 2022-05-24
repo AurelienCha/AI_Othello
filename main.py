@@ -11,8 +11,8 @@ INFINITY = 999999999
 # Kind of IA
 
 
-WHITE = " ⚫️ "
-BLACK = " ⚪️ "
+WHITE = " ⚫️"
+BLACK = " ⚪️"
 EMPTY = "    "
 
 DANGEROUS_POSITIONS = [
