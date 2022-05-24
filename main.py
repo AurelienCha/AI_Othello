@@ -11,8 +11,8 @@ INFINITY = 999999999
 # Kind of IA
 
 
-WHITE = " ⚫️"
-BLACK = " ⚪️"
+WHITE = " ⚫️ "
+BLACK = " ⚪️ "
 EMPTY = "    "
 
 DANGEROUS_POSITIONS = [
@@ -179,11 +179,14 @@ class Board():
     def alpha_beta_search(self, player, adversary):
         boardAlgo = Board()
         boardAlgo.board = copy.deepcopy(self.board)
-        moves = [(0,0) for _ in range(player.depth)]
+        depth = player.depth
+        if player.cst_depth and self.remaining_round <= 15:
+            depth += 2
+        moves = [(0,0) for _ in range(depth)]
         if self._start_with_max(player):
-            boardAlgo.max_value(player, adversary, -INFINITY, INFINITY, moves, 0, player.depth)
+            boardAlgo.max_value(player, adversary, -INFINITY, INFINITY, moves, 0, depth)
         else:
-            boardAlgo.min_value(player, adversary, -INFINITY, INFINITY, moves, 0, player.depth)
+            boardAlgo.min_value(player, adversary, -INFINITY, INFINITY, moves, 0, depth)
         return moves[0]
 
     def max_value(self, player, adversary, alpha, beta, moves, cmpt, depth):
@@ -381,7 +384,7 @@ def extract_player_option(str):
         else:
             sys.exit(11)
 
-        cst_depth = False if ('+' in str) else True
+        cst_depth = True if ('+' in str) else False
         pruning = False if ('P' in str or 'p' in str) else True
 
         if 'min' in str or 'Min' in str or 'MIN' in str: cost = 'min'
