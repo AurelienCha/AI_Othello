@@ -7,7 +7,6 @@ import time
 
 DEBUG = False
 INFINITY = 999999999
-DEPTH = 3
 
 # Kind of IA
 
@@ -15,8 +14,7 @@ DEPTH = 3
 WHITE = " ⚫️ "
 BLACK = " ⚪️ "
 EMPTY = "    "
-BACK_GREEN = "\x1b[0m" # "\x1b[0;30;42m"  # style=0=normal, front=30=black, back=42=green
-RESET_COLOR = "\x1b[0m"
+
 DANGEROUS_POSITIONS = [
     (0, 1), (0, 6),
     (1, 0), (1, 1), (1, 6), (1, 7),
@@ -38,24 +36,24 @@ class Board():
 
     def __str__(self):
         b = self.board
-        return f"""     1    2    3    4    5    6    7    8
-   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
- A {BACK_GREEN}│{b[0][0]}│{b[0][1]}│{b[0][2]}│{b[0][3]}│{b[0][4]}│{b[0][5]}│{b[0][6]}│{b[0][7]}│{RESET_COLOR} A
-   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
- B {BACK_GREEN}│{b[1][0]}│{b[1][1]}│{b[1][2]}│{b[1][3]}│{b[1][4]}│{b[1][5]}│{b[1][6]}│{b[1][7]}│{RESET_COLOR} B
-   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
- C {BACK_GREEN}│{b[2][0]}│{b[2][1]}│{b[2][2]}│{b[2][3]}│{b[2][4]}│{b[2][5]}│{b[2][6]}│{b[2][7]}│{RESET_COLOR} C
-   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
- D {BACK_GREEN}│{b[3][0]}│{b[3][1]}│{b[3][2]}│{b[3][3]}│{b[3][4]}│{b[3][5]}│{b[3][6]}│{b[3][7]}│{RESET_COLOR} D
-   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
- E {BACK_GREEN}│{b[4][0]}│{b[4][1]}│{b[4][2]}│{b[4][3]}│{b[4][4]}│{b[4][5]}│{b[4][6]}│{b[4][7]}│{RESET_COLOR} E
-   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
- F {BACK_GREEN}│{b[5][0]}│{b[5][1]}│{b[5][2]}│{b[5][3]}│{b[5][4]}│{b[5][5]}│{b[5][6]}│{b[5][7]}│{RESET_COLOR} F
-   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
- G {BACK_GREEN}│{b[6][0]}│{b[6][1]}│{b[6][2]}│{b[6][3]}│{b[6][4]}│{b[6][5]}│{b[6][6]}│{b[6][7]}│{RESET_COLOR} G
-   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
- H {BACK_GREEN}│{b[7][0]}│{b[7][1]}│{b[7][2]}│{b[7][3]}│{b[7][4]}│{b[7][5]}│{b[7][6]}│{b[7][7]}│{RESET_COLOR} H
-   {BACK_GREEN}┼────┼────┼────┼────┼────┼────┼────┼────┼{RESET_COLOR}
+        return f"""Remaining round {self.remaining_round}\n     1    2    3    4    5    6    7    8
+   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+ A │{b[0][0]}│{b[0][1]}│{b[0][2]}│{b[0][3]}│{b[0][4]}│{b[0][5]}│{b[0][6]}│{b[0][7]}│ A
+   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+ B │{b[1][0]}│{b[1][1]}│{b[1][2]}│{b[1][3]}│{b[1][4]}│{b[1][5]}│{b[1][6]}│{b[1][7]}│ B
+   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+ C │{b[2][0]}│{b[2][1]}│{b[2][2]}│{b[2][3]}│{b[2][4]}│{b[2][5]}│{b[2][6]}│{b[2][7]}│ C
+   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+ D │{b[3][0]}│{b[3][1]}│{b[3][2]}│{b[3][3]}│{b[3][4]}│{b[3][5]}│{b[3][6]}│{b[3][7]}│ D
+   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+ E │{b[4][0]}│{b[4][1]}│{b[4][2]}│{b[4][3]}│{b[4][4]}│{b[4][5]}│{b[4][6]}│{b[4][7]}│ E
+   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+ F │{b[5][0]}│{b[5][1]}│{b[5][2]}│{b[5][3]}│{b[5][4]}│{b[5][5]}│{b[5][6]}│{b[5][7]}│ F
+   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+ G │{b[6][0]}│{b[6][1]}│{b[6][2]}│{b[6][3]}│{b[6][4]}│{b[6][5]}│{b[6][6]}│{b[6][7]}│ G
+   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+ H │{b[7][0]}│{b[7][1]}│{b[7][2]}│{b[7][3]}│{b[7][4]}│{b[7][5]}│{b[7][6]}│{b[7][7]}│ H
+   ┼────┼────┼────┼────┼────┼────┼────┼────┼
      1    2    3    4    5    6    7    8"""
 
     def has_dominated(self, player):
@@ -168,17 +166,23 @@ class Board():
                     score += 1
         return score
 
+    def _start_with_max(self, player):
+        rep = False
+        if player.cost_function == "max" or (player.cost_function=="hybrid" and self.remaining_round <= 2*player.depth):
+            rep = True
+        if player.depth % 2:
+            return not rep
+        else:
+            return rep
+
 
     def alpha_beta_search(self, player, adversary):
         boardAlgo = Board()
         boardAlgo.board = copy.deepcopy(self.board)
         moves = [(0,0) for _ in range(player.depth)]
-        print(player.describe())
-        if player.cost_function=="max" or (player.cost_function=="hybrid" and self.remaining_round <= 2*player.depth):
-            print("MAX")
+        if self._start_with_max(player):
             boardAlgo.max_value(player, adversary, -INFINITY, INFINITY, moves, 0, player.depth)
-        elif player.cost_function=="min" or (player.cost_function=="hybrid" and self.remaining_round > 2*player.depth):
-            print("MIN")
+        else:
             boardAlgo.min_value(player, adversary, -INFINITY, INFINITY, moves, 0, player.depth)
         return moves[0]
 
@@ -252,19 +256,19 @@ class Board():
 
 
 class Player():
-    def __init__(self, color, type="H", depth=DEPTH, pruning=True, cost="hybrid"):
+    def __init__(self, color, type, depth, cst_depth, pruning, cost):
         self.color = color
         self.type = type
         self.depth = depth
+        self.cst_depth = cst_depth
         self.pruning = pruning
         self.cost_function = cost
-        # self.growing_depth
         self.describe()
 
     def describe(self):
-        print(f"Player {self.color} is {self.type}")
+        print(f"\nPlayer {self.color} is {self.type}")
         if self.type == 'IA':
-            print(f" Depth : {self.depth} \n Pruning : {self.pruning} \n Cost function : {self.cost_function}")
+            print(f" Depth : {self.depth} (cst={self.cst_depth}) \n Pruning : {self.pruning} \n Cost function : {self.cost_function}")
 
     def inversePlayer(self, players):
         if self == players[0]:
@@ -295,16 +299,15 @@ class Player():
 
 
 class Game:
-    def __init__(self, type_1, depth_1, pruning_1, cost_1, type_2, depth_2, pruning_2, cost_2):
+    def __init__(self, type_1, depth_1, cst_depth_1, pruning_1, cost_1, type_2, depth_2, cst_depth_2, pruning_2, cost_2):
         self.board = Board()
-        self.players = [Player(BLACK, type_1, depth_1, pruning_1, cost_1),
-                        Player(WHITE, type_2, depth_2, pruning_2, cost_2)]
+        self.players = [Player(BLACK, type_1, depth_1, cst_depth_1, pruning_1, cost_1),
+                        Player(WHITE, type_2, depth_2, cst_depth_2, pruning_2, cost_2)]
 
     def _print(self):
         """
         Prints the game: the header, notification(s) (if any) and the board
         """
-        os.system("cls") # todo operating system dependent
         header = "Reversi"
         p0 = self.players[0]
         p1 = self.players[1]
@@ -316,12 +319,20 @@ Score: {p0_score} vs. {p1_score}
 """
         print(render)
 
+    def _no_possible_move(self):
+        if not (self.board.has_valid_moves(self.players[0])) and not (self.board.has_valid_moves(self.players[1])):
+            return True
+        else:
+            return False
+
     def play(self):
         for player in cycle(self.players):
             self._print()
-            if self.board.is_full() or self.board.has_dominated(player):
+            if self.board.is_full() or self.board.has_dominated(player) or self._no_possible_move():
+                print("BREAK", self.board.is_full(), " ", self.board.has_dominated(player), " ", self._no_possible_move)
                 break
             if self.board.has_valid_moves(player):
+                start = time.time()
                 while True:
                     try:
                         if player.type == 'H':  # Human Player
@@ -333,6 +344,7 @@ Score: {p0_score} vs. {p1_score}
                             move = self.board.alpha_beta_search(player, player.inversePlayer(self.players))
                             print(move)
                         if type(move) is tuple:
+                            end = time.time()
                             self.board.put_stone(player, move)
                             break
                         else:
@@ -343,13 +355,18 @@ Score: {p0_score} vs. {p1_score}
                         pass
                     except Exception as e:
                         pass
+                print(f"time for last play {end - start}")
+                print(f"Score Player 1 : {self.board.get_player_score(self.players[0])}")
+                print(f"Score Player 2 : {self.board.get_player_score(self.players[1])}")
+                print(f"Last move : Player {player.color} in ({chr(65+move[0])}, {move[1]+1})\n")
+                # todo put in datframe for CSV (+ save corner pos)
         self._print()
 
 
 def extract_player_option(str):
-    if str[0] == 'H':
+    if str[0] == 'H' or str[0] == 'h':
         return 'H', None, None, None, None
-    elif str[0] == 'R':
+    elif str[0] == 'R' or str[0] == 'r':
         return 'R', None, None, None, None
     else:
         print(str)
@@ -364,26 +381,38 @@ def extract_player_option(str):
         else:
             sys.exit(11)
 
-        if '+' in str: var_depth = False
-        else: var_depth = True
-        if 'P' in str or 'p' in str: pruning = False
-        else: pruning = True
+        cst_depth = False if ('+' in str) else True
+        pruning = False if ('P' in str or 'p' in str) else True
+
         if 'min' in str or 'Min' in str or 'MIN' in str: cost = 'min'
         elif 'max' in str or 'Max' in str or 'MAX' in str: cost = 'max'
         else: cost = 'hybrid'
 
-        return 'IA', depth, var_depth, pruning, cost
+        return 'IA', depth, cst_depth, pruning, cost
+
+
+def help():
+    print("The program needs 2 arguments: py main.py [player_1] [player_2]")
+    print("Where argument [player] is the parameters for player")
+    print(" - 'H' : Human")
+    print(" - 'R' : Random")
+    print(" - '<depth>' : AI where depth is a digit representing the depth of the tree (may have optionnal parameters)")
+    print("             - '+' for increasing depth at the end")
+    print("             - 'p' for removing pruning")
+    print("             - 'min' or 'max' to specify the capture strategy (by default : 'hybrid' -> min at the beginning, max at the end)")
+    print("\n\ne.g. To run a Random algo against an AI with a depth of 4, increasing towards the end, without pruning and minimizing the number of pawns captured\npy main.py R 4+Pmin")
 
 
 if __name__ == '__main__':
-    type_1, depth_1, pruning_1, cost_1, type_2, depth_2, pruning_2, cost_2 = 'H', None, None, None, 'H', None, None, None
-    if len(sys.argv) >= 2:
-        type_1, depth_1, var_depth_1, pruning_1, cost_1 = extract_player_option(sys.argv[1])
-    if len(sys.argv) >= 3:
-        type_2, depth_2, var_depth_2, pruning_2, cost_2 = extract_player_option(sys.argv[2])
-    elif len(sys.argv) > 3:
+    if len(sys.argv) < 3:
+        help()
+        sys.exit()
+    if len(sys.argv) > 3:
         print("Please refers you to the documentation...", file=sys.stderr)
         sys.exit(1)
 
-    game = Game(type_1, depth_1, pruning_1, cost_1, type_2, depth_2, pruning_2, cost_2)
+    type_1, depth_1, cst_depth_1, pruning_1, cost_1 = extract_player_option(sys.argv[1])
+    type_2, depth_2, cst_depth_2, pruning_2, cost_2 = extract_player_option(sys.argv[2])
+
+    game = Game(type_1, depth_1,  cst_depth_1, pruning_1, cost_1, type_2, depth_2, cst_depth_2, pruning_2, cost_2)
     game.play()
