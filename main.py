@@ -40,7 +40,7 @@ class Board():
 
     def __str__(self):
         b = self.board
-        return f"""Remaining round {self.remaining_round}\n     1    2   3   4   5   6   7   8
+        return f"""Remaining round {self.remaining_round}\n     1   2   3   4   5   6   7   8
    ┼───┼───┼───┼───┼───┼───┼───┼───┼
  A │{b[0][0]}│{b[0][1]}│{b[0][2]}│{b[0][3]}│{b[0][4]}│{b[0][5]}│{b[0][6]}│{b[0][7]}│ A
    ┼───┼───┼───┼───┼───┼───┼───┼───┼
@@ -184,7 +184,7 @@ class Board():
             for x in range(8):
                 if self.board[x][y] == player.color:
                     if (x,y) in CORNER_POSITIONS:
-                        score += 50 * min_or_max  # multiply by '-1' if minimization to keep an interest
+                        score += 500 * min_or_max  # multiply by '-1' if minimization to keep an interest
                     elif (x,y) in DANGEROUS_POSITIONS and self._nearest_corner(x, y) == EMPTY:
                         score -= 20 * min_or_max  # multiply by '-1' if minimization to keep a penalty
                     else:
@@ -192,7 +192,7 @@ class Board():
 
                 elif self.board[x][y] == adversary.color:
                     if (x,y) in CORNER_POSITIONS:
-                        score -= 50 * min_or_max  # multiply by '-1' if minimization to keep an interest
+                        score -= 500 * min_or_max  # multiply by '-1' if minimization to keep an interest
                     elif (x,y) in DANGEROUS_POSITIONS and self._nearest_corner(x, y) == EMPTY:
                         score += 20 * min_or_max  # multiply by '-1' if minimization to keep a penalty
                     else:
@@ -201,7 +201,7 @@ class Board():
 
     def _start_with_max(self, player):
         rep = False
-        if player.cost_function == "max" or (player.cost_function=="hybrid" and self.remaining_round <= 2*player.depth):
+        if player.cost_function == "max" or (player.cost_function=="hybrid" and self.remaining_round <= 15):
             rep = True
         if player.depth % 2:
             return not rep
