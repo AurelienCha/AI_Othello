@@ -28,10 +28,14 @@ class Board():
     def __init__(self):
         self.remaining_round = 60
         self.board = [[EMPTY for i in range(8)] for i in range(8)]
-        self.board[3][4] = WHITE
-        self.board[3][3] = BLACK
-        self.board[4][3] = WHITE
-        self.board[4][4] = BLACK
+        #self.board[3][4] = WHITE
+        #self.board[3][3] = BLACK
+        #self.board[4][3] = WHITE
+        #self.board[4][4] = BLACK
+        self.board[1][2] = WHITE
+        self.board[1][1] = BLACK
+        self.board[2][1] = WHITE
+        self.board[2][2] = BLACK
 
 
     def __str__(self):
@@ -416,3 +420,4 @@ if __name__ == '__main__':
 
     game = Game(type_1, depth_1,  cst_depth_1, pruning_1, cost_1, type_2, depth_2, cst_depth_2, pruning_2, cost_2)
     game.play()
+
