@@ -40,7 +40,7 @@ class Board():
 
     def __str__(self):
         b = self.board
-        return f"""Remaining round {self.remaining_round}\n     1    2    3    4    5    6    7    8
+        return f"""Remaining round {self.remaining_round}\n     1    2   3   4   5   6   7   8
    ┼───┼───┼───┼───┼───┼───┼───┼───┼
  A │{b[0][0]}│{b[0][1]}│{b[0][2]}│{b[0][3]}│{b[0][4]}│{b[0][5]}│{b[0][6]}│{b[0][7]}│ A
    ┼───┼───┼───┼───┼───┼───┼───┼───┼
@@ -58,7 +58,7 @@ class Board():
    ┼───┼───┼───┼───┼───┼───┼───┼───┼
  H │{b[7][0]}│{b[7][1]}│{b[7][2]}│{b[7][3]}│{b[7][4]}│{b[7][5]}│{b[7][6]}│{b[7][7]}│ H
    ┼───┼───┼───┼───┼───┼───┼───┼───┼
-     1    2    3    4    5    6    7    8"""
+     1   2   3   4   5   6   7   8"""
 
     def has_dominated(self, player):
         """
@@ -371,6 +371,7 @@ Score: {p0_score} vs. {p1_score}
             return False
 
     def play(self, argv1, argv2):
+        move = None
         if SAVE:
             df = pd.DataFrame(columns=['Time', 'Color', 'Move', 'Black', 'White'])
             df['Time'] = df['Time'].astype(float)
@@ -378,8 +379,8 @@ Score: {p0_score} vs. {p1_score}
             df['White'] = df['White'].astype(int)
         for player in cycle(self.players):
             self._print()
+            if move: print(f"Last move : Player {player.inversePlayer(self.players).color} in ({chr(65+move[0])}, {move[1]+1})\n")
             if self.board.is_full() or self.board.has_dominated(player) or self._no_possible_move():
-                print("BREAK", self.board.is_full(), " ", self.board.has_dominated(player), " ", self._no_possible_move)
                 break
             if self.board.has_valid_moves(player):
                 start = time.time()
@@ -404,13 +405,11 @@ Score: {p0_score} vs. {p1_score}
                         pass
                     except Exception as e:
                         pass
-                print(f"Last move : Player {player.color} in ({chr(65+move[0])}, {move[1]+1})\n")
                 if SAVE: df.loc[len(df.index)] = {'Time': f"{end - start: 0.3f}",
                                                   'Color': player.color,
                                                   'Move': f"({chr(65+move[0])}, {move[1]+1})",
                                                   'Black': self.board.get_player_score(self.players[0]),
                                                   'White': self.board.get_player_score(self.players[1])}
-        self._print()
 
         if SAVE:
             i = 0
