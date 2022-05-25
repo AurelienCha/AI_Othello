@@ -184,7 +184,7 @@ class Board():
             for x in range(8):
                 if self.board[x][y] == player.color:
                     if (x,y) in CORNER_POSITIONS:
-                        score += 500 * min_or_max  # multiply by '-1' if minimization to keep an interest
+                        score += 50 * min_or_max  # multiply by '-1' if minimization to keep an interest
                     elif (x,y) in DANGEROUS_POSITIONS and self._nearest_corner(x, y) == EMPTY:
                         score -= 20 * min_or_max  # multiply by '-1' if minimization to keep a penalty
                     else:
@@ -192,7 +192,7 @@ class Board():
 
                 elif self.board[x][y] == adversary.color:
                     if (x,y) in CORNER_POSITIONS:
-                        score -= 500 * min_or_max  # multiply by '-1' if minimization to keep an interest
+                        score -= 50 * min_or_max  # multiply by '-1' if minimization to keep an interest
                     elif (x,y) in DANGEROUS_POSITIONS and self._nearest_corner(x, y) == EMPTY:
                         score += 20 * min_or_max  # multiply by '-1' if minimization to keep a penalty
                     else:
