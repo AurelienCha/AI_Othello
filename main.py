@@ -4,16 +4,21 @@ import os
 import random
 import sys
 import time
+import pandas as pd
 
+SAVE = True
 DEBUG = False
 INFINITY = 999999999
 
-# Kind of IA
-
-
+"""
 WHITE = " ⚫️ "
 BLACK = " ⚪️ "
 EMPTY = "    "
+"""
+
+WHITE = " O "
+BLACK = " X "
+EMPTY = "   "
 
 DANGEROUS_POSITIONS = [
     (0, 1), (0, 6),
@@ -23,41 +28,36 @@ DANGEROUS_POSITIONS = [
 ]
 CORNER_POSITIONS = [(0, 0), (7, 0), (7, 7), (0, 7)]
 
-
 class Board():
     def __init__(self):
         self.remaining_round = 60
         self.board = [[EMPTY for i in range(8)] for i in range(8)]
-        #self.board[3][4] = WHITE
-        #self.board[3][3] = BLACK
-        #self.board[4][3] = WHITE
-        #self.board[4][4] = BLACK
-        self.board[1][2] = WHITE
-        self.board[1][1] = BLACK
-        self.board[2][1] = WHITE
-        self.board[2][2] = BLACK
+        self.board[3][4] = WHITE
+        self.board[3][3] = BLACK
+        self.board[4][3] = WHITE
+        self.board[4][4] = BLACK
 
 
     def __str__(self):
         b = self.board
         return f"""Remaining round {self.remaining_round}\n     1    2    3    4    5    6    7    8
-   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+   ┼───┼───┼───┼───┼───┼───┼───┼───┼
  A │{b[0][0]}│{b[0][1]}│{b[0][2]}│{b[0][3]}│{b[0][4]}│{b[0][5]}│{b[0][6]}│{b[0][7]}│ A
-   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+   ┼───┼───┼───┼───┼───┼───┼───┼───┼
  B │{b[1][0]}│{b[1][1]}│{b[1][2]}│{b[1][3]}│{b[1][4]}│{b[1][5]}│{b[1][6]}│{b[1][7]}│ B
-   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+   ┼───┼───┼───┼───┼───┼───┼───┼───┼
  C │{b[2][0]}│{b[2][1]}│{b[2][2]}│{b[2][3]}│{b[2][4]}│{b[2][5]}│{b[2][6]}│{b[2][7]}│ C
-   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+   ┼───┼───┼───┼───┼───┼───┼───┼───┼
  D │{b[3][0]}│{b[3][1]}│{b[3][2]}│{b[3][3]}│{b[3][4]}│{b[3][5]}│{b[3][6]}│{b[3][7]}│ D
-   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+   ┼───┼───┼───┼───┼───┼───┼───┼───┼
  E │{b[4][0]}│{b[4][1]}│{b[4][2]}│{b[4][3]}│{b[4][4]}│{b[4][5]}│{b[4][6]}│{b[4][7]}│ E
-   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+   ┼───┼───┼───┼───┼───┼───┼───┼───┼
  F │{b[5][0]}│{b[5][1]}│{b[5][2]}│{b[5][3]}│{b[5][4]}│{b[5][5]}│{b[5][6]}│{b[5][7]}│ F
-   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+   ┼───┼───┼───┼───┼───┼───┼───┼───┼
  G │{b[6][0]}│{b[6][1]}│{b[6][2]}│{b[6][3]}│{b[6][4]}│{b[6][5]}│{b[6][6]}│{b[6][7]}│ G
-   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+   ┼───┼───┼───┼───┼───┼───┼───┼───┼
  H │{b[7][0]}│{b[7][1]}│{b[7][2]}│{b[7][3]}│{b[7][4]}│{b[7][5]}│{b[7][6]}│{b[7][7]}│ H
-   ┼────┼────┼────┼────┼────┼────┼────┼────┼
+   ┼───┼───┼───┼───┼───┼───┼───┼───┼
      1    2    3    4    5    6    7    8"""
 
     def has_dominated(self, player):
@@ -148,7 +148,7 @@ class Board():
         elif cell==player.color:
             return [player.color]
         else:
-            return [(x,y)] + self._get_line_in_direction(player, next_position, direction)  # todo stop if wrong capture
+            return [(x,y)] + self._get_line_in_direction(player, next_position, direction)
 
     def put_stone(self, player, move):
         """
@@ -170,6 +170,35 @@ class Board():
                     score += 1
         return score
 
+    def _nearest_corner(self, x, y):
+        if x == 1: x = 0
+        if x == 6: x = 7
+        if y == 1: y = 0
+        if y == 6: y = 7
+
+        return self.board[x][y]
+
+    def get_player_score_with_heuristic(self, player, adversary, min_or_max):
+        score = 0
+        for y in range(8):
+            for x in range(8):
+                if self.board[x][y] == player.color:
+                    if (x,y) in CORNER_POSITIONS:
+                        score += 50 * min_or_max  # multiply by '-1' if minimization to keep an interest
+                    elif (x,y) in DANGEROUS_POSITIONS and self._nearest_corner(x, y) == EMPTY:
+                        score -= 20 * min_or_max  # multiply by '-1' if minimization to keep a penalty
+                    else:
+                        score += 1
+
+                elif self.board[x][y] == adversary.color:
+                    if (x,y) in CORNER_POSITIONS:
+                        score -= 50 * min_or_max  # multiply by '-1' if minimization to keep an interest
+                    elif (x,y) in DANGEROUS_POSITIONS and self._nearest_corner(x, y) == EMPTY:
+                        score += 20 * min_or_max  # multiply by '-1' if minimization to keep a penalty
+                    else:
+                        score -= 1
+        return score
+
     def _start_with_max(self, player):
         rep = False
         if player.cost_function == "max" or (player.cost_function=="hybrid" and self.remaining_round <= 2*player.depth):
@@ -179,26 +208,31 @@ class Board():
         else:
             return rep
 
-
     def alpha_beta_search(self, player, adversary):
         boardAlgo = Board()
         boardAlgo.board = copy.deepcopy(self.board)
         depth = player.depth
-        if player.cst_depth and self.remaining_round <= 15:
+        if not (player.cst_depth) and self.remaining_round <= 15:
             depth += 2
+        #moves = [[] for _ in range(depth)]
         moves = [(0,0) for _ in range(depth)]
         if self._start_with_max(player):
-            boardAlgo.max_value(player, adversary, -INFINITY, INFINITY, moves, 0, depth)
+            boardAlgo.max_value(player, adversary, -INFINITY, INFINITY, moves, 0, depth, player.heuristic)
         else:
-            boardAlgo.min_value(player, adversary, -INFINITY, INFINITY, moves, 0, depth)
+            boardAlgo.min_value(player, adversary, -INFINITY, INFINITY, moves, 0, depth, player.heuristic)
+        print("////", moves)
+
         return moves[0]
 
-    def max_value(self, player, adversary, alpha, beta, moves, cmpt, depth):
+    def max_value(self, player, adversary, alpha, beta, moves, cmpt, depth, heuristic):
         if DEBUG: print(cmpt, cmpt*"    ", "Max", player.color, "alpha=", alpha, "beta=", beta)
 
         # If end of recursion/tree return evaluation function
         if cmpt >= depth or self.is_full() or not self.has_valid_moves(player):
-            return self.get_player_score(player)
+            if heuristic:
+                return self.get_player_score_with_heuristic(player, adversary, 1)
+            else:
+                return self.get_player_score(player)
 
         # Loops over possibles moves
         for move in self._get_valid_moves(player):
@@ -208,7 +242,7 @@ class Board():
             nextBoard.board = copy.deepcopy(self.board)
             nextBoard.put_stone(player, move)
             # Compute recusively the evaluation function (minMax)
-            utility = nextBoard.min_value(adversary, player, alpha, beta, moves, cmpt+1, depth)
+            utility = nextBoard.min_value(adversary, player, alpha, beta, moves, cmpt+1, depth, heuristic)
             if DEBUG: print(cmpt, cmpt * "    ", utility >= beta, ":: utility >= beta ::", utility, ">=", beta)
             if DEBUG: print(cmpt, cmpt * "    ", utility > alpha, ":: utility > alpha ::", utility, ">", alpha)
             # Pruning if utility out of optimal range
@@ -221,12 +255,15 @@ class Board():
                 moves[cmpt] = move
         return alpha
 
-    def min_value(self, player, adversary, alpha, beta, moves, cmpt, depth):
+    def min_value(self, player, adversary, alpha, beta, moves, cmpt, depth, heuristic):
         if DEBUG: print(cmpt, cmpt*"    ", "min", player.color, "moves=", moves, "alpha=", alpha, "beta=", beta)
 
         # If end of recursion/tree return evaluation function
         if cmpt >= depth or self.is_full() or not self.has_valid_moves(player):
-            return self.get_player_score(player)
+            if heuristic:
+                return self.get_player_score_with_heuristic(player, adversary, -1)
+            else:
+                return self.get_player_score(player)
 
         # Loops over possibles moves
         for move in self._get_valid_moves(player):
@@ -236,7 +273,7 @@ class Board():
             nextBoard.board = copy.deepcopy(self.board)
             nextBoard.put_stone(player, move)
             # Compute recusively the evaluation function (minMax)
-            utility = nextBoard.max_value(adversary, player, alpha, beta, moves, cmpt+1, depth)
+            utility = nextBoard.max_value(adversary, player, alpha, beta, moves, cmpt+1, depth, heuristic)
             if DEBUG: print(cmpt, cmpt*"    ", utility <= alpha, ":: utility =< alpha ::", utility, "<=", alpha)
             if DEBUG: print(cmpt, cmpt*"    ", utility < beta, ":: utility < beta ::", utility, "<", beta)
             # Pruning if utility out of optimal range
@@ -263,19 +300,21 @@ class Board():
 
 
 class Player():
-    def __init__(self, color, type, depth, cst_depth, pruning, cost):
+    def __init__(self, color, type, depth, cst_depth, pruning, cost, heuristic):
         self.color = color
         self.type = type
         self.depth = depth
         self.cst_depth = cst_depth
         self.pruning = pruning
         self.cost_function = cost
+        self.heuristic = heuristic
         self.describe()
 
     def describe(self):
         print(f"\nPlayer {self.color} is {self.type}")
         if self.type == 'IA':
-            print(f" Depth : {self.depth} (cst={self.cst_depth}) \n Pruning : {self.pruning} \n Cost function : {self.cost_function}")
+            print(f" Depth : {self.depth} (cst={self.cst_depth}) \n With heuristic : {self.heuristic} "
+                  f"\n Pruning : {self.pruning} \n Cost function : {self.cost_function}")
 
     def inversePlayer(self, players):
         if self == players[0]:
@@ -306,10 +345,11 @@ class Player():
 
 
 class Game:
-    def __init__(self, type_1, depth_1, cst_depth_1, pruning_1, cost_1, type_2, depth_2, cst_depth_2, pruning_2, cost_2):
+    def __init__(self, param_j1, param_j2):
+        # param_j = (type, depth, cst_depth, pruning, cost, heuristic)
         self.board = Board()
-        self.players = [Player(BLACK, type_1, depth_1, cst_depth_1, pruning_1, cost_1),
-                        Player(WHITE, type_2, depth_2, cst_depth_2, pruning_2, cost_2)]
+        self.players = [Player(BLACK, param_j1[0], param_j1[1], param_j1[2], param_j1[3], param_j1[4], param_j1[5]),
+                        Player(WHITE, param_j2[0], param_j2[1], param_j2[2], param_j2[3], param_j2[4], param_j2[5])]
 
     def _print(self):
         """
@@ -332,7 +372,12 @@ Score: {p0_score} vs. {p1_score}
         else:
             return False
 
-    def play(self):
+    def play(self, argv1, argv2):
+        if SAVE:
+            df = pd.DataFrame(columns=['Time', 'Color', 'Move', 'Black', 'White'])
+            df['Time'] = df['Time'].astype(float)
+            df['Black'] = df['Black'].astype(int)
+            df['White'] = df['White'].astype(int)
         for player in cycle(self.players):
             self._print()
             if self.board.is_full() or self.board.has_dominated(player) or self._no_possible_move():
@@ -362,19 +407,34 @@ Score: {p0_score} vs. {p1_score}
                         pass
                     except Exception as e:
                         pass
-                print(f"time for last play {end - start}")
+                print(f"time for last play {end - start: 0.3f}")
                 print(f"Score Player 1 : {self.board.get_player_score(self.players[0])}")
                 print(f"Score Player 2 : {self.board.get_player_score(self.players[1])}")
                 print(f"Last move : Player {player.color} in ({chr(65+move[0])}, {move[1]+1})\n")
-                # todo put in datframe for CSV (+ save corner pos)
+                if SAVE: df = df.append({'Time': f"{end - start: 0.3f}",
+                                         'Color': player.color,
+                                         'Move': f"({chr(65+move[0])}, {move[1]+1})",
+                                         'Black': self.board.get_player_score(self.players[0]),
+                                         'White': self.board.get_player_score(self.players[1])},
+                                        ignore_index=True)
         self._print()
+
+        if SAVE:
+            i = 0
+            while True:
+                i += 1
+                n = 3 - len(str(i))
+                filename = argv1 + '_' + argv2 + '_run_' + n * '0' + str(i) + '.csv'
+                if not os.path.exists(filename):
+                    df.to_csv(filename)
+                    break
 
 
 def extract_player_option(str):
     if str[0] == 'H' or str[0] == 'h':
-        return 'H', None, None, None, None
+        return 'H', None, None, None, None, False
     elif str[0] == 'R' or str[0] == 'r':
-        return 'R', None, None, None, None
+        return 'R', None, None, None, None, False
     else:
         print(str)
         depth = ''
@@ -388,14 +448,15 @@ def extract_player_option(str):
         else:
             sys.exit(11)
 
-        cst_depth = True if ('+' in str) else False
+        cst_depth = False if ('+' in str) else True
         pruning = False if ('P' in str or 'p' in str) else True
+        heuristic = False if ('H' in str or 'h' in str) else True
 
         if 'min' in str or 'Min' in str or 'MIN' in str: cost = 'min'
         elif 'max' in str or 'Max' in str or 'MAX' in str: cost = 'max'
         else: cost = 'hybrid'
 
-        return 'IA', depth, cst_depth, pruning, cost
+        return 'IA', depth, cst_depth, pruning, cost, heuristic
 
 
 def help():
@@ -406,8 +467,9 @@ def help():
     print(" - '<depth>' : AI where depth is a digit representing the depth of the tree (may have optionnal parameters)")
     print("             - '+' for increasing depth at the end")
     print("             - 'p' for removing pruning")
+    print("             - 'h' for removing heuristic")
     print("             - 'min' or 'max' to specify the capture strategy (by default : 'hybrid' -> min at the beginning, max at the end)")
-    print("\n\ne.g. To run a Random algo against an AI with a depth of 4, increasing towards the end, without pruning and minimizing the number of pawns captured\npy main.py R 4+Pmin")
+    print("\n\ne.g. To run a Random algo against an AI with a depth of 4, increasing towards the end, without pruning and heuristic and minimizing the number of pawns captured\npy main.py R 4+PHmin")
 
 
 if __name__ == '__main__':
@@ -418,9 +480,8 @@ if __name__ == '__main__':
         print("Please refers you to the documentation...", file=sys.stderr)
         sys.exit(1)
 
-    type_1, depth_1, cst_depth_1, pruning_1, cost_1 = extract_player_option(sys.argv[1])
-    type_2, depth_2, cst_depth_2, pruning_2, cost_2 = extract_player_option(sys.argv[2])
+    setting_player_1 = extract_player_option(sys.argv[1])
+    setting_player_2 = extract_player_option(sys.argv[2])
 
-    game = Game(type_1, depth_1,  cst_depth_1, pruning_1, cost_1, type_2, depth_2, cst_depth_2, pruning_2, cost_2)
-    game.play()
-
+    game = Game(setting_player_1, setting_player_2)
+    game.play(sys.argv[1], sys.argv[2])
