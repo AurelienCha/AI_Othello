@@ -220,8 +220,6 @@ class Board():
             boardAlgo.max_value(player, adversary, -INFINITY, INFINITY, moves, 0, depth, player.heuristic)
         else:
             boardAlgo.min_value(player, adversary, -INFINITY, INFINITY, moves, 0, depth, player.heuristic)
-        print("////", moves)
-
         return moves[0]
 
     def max_value(self, player, adversary, alpha, beta, moves, cmpt, depth, heuristic):
@@ -394,7 +392,6 @@ Score: {p0_score} vs. {p1_score}
                         else: # IA
                             print(f"Player {player.color} is thinking..")
                             move = self.board.alpha_beta_search(player, player.inversePlayer(self.players))
-                            print(move)
                         if type(move) is tuple:
                             end = time.time()
                             self.board.put_stone(player, move)
@@ -407,16 +404,12 @@ Score: {p0_score} vs. {p1_score}
                         pass
                     except Exception as e:
                         pass
-                print(f"time for last play {end - start: 0.3f}")
-                print(f"Score Player 1 : {self.board.get_player_score(self.players[0])}")
-                print(f"Score Player 2 : {self.board.get_player_score(self.players[1])}")
                 print(f"Last move : Player {player.color} in ({chr(65+move[0])}, {move[1]+1})\n")
-                if SAVE: df = df.append({'Time': f"{end - start: 0.3f}",
-                                         'Color': player.color,
-                                         'Move': f"({chr(65+move[0])}, {move[1]+1})",
-                                         'Black': self.board.get_player_score(self.players[0]),
-                                         'White': self.board.get_player_score(self.players[1])},
-                                        ignore_index=True)
+                if SAVE: df.loc[len(df.index)] = {'Time': f"{end - start: 0.3f}",
+                                                  'Color': player.color,
+                                                  'Move': f"({chr(65+move[0])}, {move[1]+1})",
+                                                  'Black': self.board.get_player_score(self.players[0]),
+                                                  'White': self.board.get_player_score(self.players[1])}
         self._print()
 
         if SAVE:
@@ -424,7 +417,7 @@ Score: {p0_score} vs. {p1_score}
             while True:
                 i += 1
                 n = 3 - len(str(i))
-                filename = argv1 + '_' + argv2 + '_run_' + n * '0' + str(i) + '.csv'
+                filename = 'Results/' + argv1 + '_' + argv2 + '_run_' + n * '0' + str(i) + '.csv'
                 if not os.path.exists(filename):
                     df.to_csv(filename)
                     break
