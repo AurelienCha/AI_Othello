@@ -2,7 +2,7 @@
 
 REversi est un Jeu qui se joue à deux dont le but est de capturer le plus de pion possible.
 
-Le jeu est présenté avec trois AI différentes, l'une avec une recherche aléatoire, l'une avec l'agorithm MinMax et l'une implemente par JOSEGALARZE.
+Le jeu est présenté avec deux AI différentes, l'une avec une recherche aléatoire et l'une avec l'agorithm MinMax (mais certains paramètres sont optionnel).
 
 
 ## Installation
