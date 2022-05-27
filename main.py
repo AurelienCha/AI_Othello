@@ -1,10 +1,10 @@
 import copy
 from itertools import cycle
 import os
+import pandas as pd
 import random
 import sys
 import time
-import pandas as pd
 
 SAVE = True
 DEBUG = False
