@@ -31,13 +31,13 @@ Le programme a besoind e 2 arguments : Joueur_1 et joueur_2 qui correspondent au
  - 'R' : aléatoire
  - '<depth>' : AI où le "depth" représente la profondeur de l'arbre avec les paramètres optionnels : 
  
-  >             - '+' pour augmenter la profondeur a la fin
-  > 
-  >              - 'p' pour enlever le pruning
-  > 
-  >              - 'h' pour enlever l'heuristic
-  >
-  >             - 'min' or 'max' pour specifier la strategie de capture ( par defaut : 'hybrid' min au debut, max à la fin)
+             [-] '+' pour augmenter la profondeur a la fin
+ 
+             [-] 'p' pour enlever le pruning
+
+             [-] 'h' pour enlever l'heuristic
+
+             [-] 'min' or 'max' pour specifier la strategie de capture ( par defaut : 'hybrid' min au debut, max à la fin)
 
 Pour lancer l'algorithm random contre une ia de profondeur 4 avec la profondeur qui augmente a la fin sans pruning ni heuristique et minimisant le nombre de pion capturer :
 ```bash
