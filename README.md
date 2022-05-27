@@ -30,10 +30,8 @@ Le programme a besoind e 2 arguments : Joueur_1 et joueur_2 qui correspondent au
  - 'H' : Humain
  - 'R' : aléatoire
  - '<depth>' : AI où le "depth" représente la profondeur de l'arbre avec les paramètres optionnels : 
- 
-             [-] '+' pour augmenter la profondeur a la fin
- 
-             [-] 'p' pour enlever le pruning
+    - '+' pour augmenter la profondeur a la fin
+    - 'p' pour enlever le pruning
 
              [-] 'h' pour enlever l'heuristic
 
