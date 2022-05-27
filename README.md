@@ -28,7 +28,7 @@ poetry run python main.py 5 H
 ```
 Le programme a besoind e 2 arguments : Joueur_1 et joueur_2 qui correspondent aux parametres des joueurs 
  - 'H' : Humain
- - 'R' : alèatoire
+ - 'R' : aléatoire
  - '<depth>' : AI où le "depth" représente la profondeur de l'arbre avec les paramètres optionnels :
                - '+' pour augmenter la profondeur a la fin
                - 'p' pour enlever le pruning
