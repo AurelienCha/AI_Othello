@@ -1,0 +1,11 @@
+﻿.\test_heuristic.ps1
+.\test_heuristic_2.ps1
+.\test_max.ps1
+.\test_max_2.ps1
+.\test_min.ps1
+.\test_min_2.ps1
+.\test_min_max.ps1
+.\test_min_max_2.ps1
+.\test_var_depth.ps1
+.\test_var_depth_2.ps1
+.\test_pruning.ps1
