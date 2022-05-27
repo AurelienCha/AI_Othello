@@ -1,12 +1,14 @@
 [tool.poetry]
-name = "reversi"
-version = "0.1.0"
-description = "Jeu reversi/othello dans le terminal"
+name = "Othello"
+version = "1.0.0"
+description = "Reversi/Othello game in terminal with parametrized AI"
 authors = ["Aurélien Chassagne & Gaelle Frauenkron & Salma Salmani"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.8"
+pandas = ">=1.4.1"
+
 
 [tool.poetry.dev-dependencies]
 
