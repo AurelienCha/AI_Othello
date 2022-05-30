@@ -20,13 +20,21 @@ WHITE = " O "
 BLACK = " X "
 EMPTY = "   "
 
+"""
+position that allow the adversary to take the corner positions 
+used for heuristic 
+"""
 DANGEROUS_POSITIONS = [
     (0, 1), (0, 6),
     (1, 0), (1, 1), (1, 6), (1, 7),
     (6, 0), (6, 1), (6, 6), (6, 7),
     (7, 1), (7, 6)
 ]
+"""
+used for heuristic
+"""
 CORNER_POSITIONS = [(0, 0), (7, 0), (7, 7), (0, 7)]
+
 
 class Board():
     def __init__(self):
@@ -81,12 +89,18 @@ class Board():
         return True
 
     def has_valid_moves(self, player):
+        """
+        Returns True/False if there is/isn't a valid move for player.
+        """
         try:
             return True if self._get_valid_moves(player) else False
         except Exception as e:
             return False
 
     def _get_valid_moves(self, player):
+        """
+        Returns the moves that are valid for player.
+        """
         valid_moves = []
         for y in range(8):
             for x in range(8):
@@ -99,7 +113,6 @@ class Board():
         """
         Returns True/False if the player can/cannot play the move.
         """
-
         x, y = move
         if x not in range(8) or y not in range(8):
             return False  # Off the board
@@ -112,7 +125,6 @@ class Board():
         """
         Return a list of tuples that represents stones (x,y positions) to flip.
         """
-
         flips = []
         flips += self._get_flips_in_direction(player, move, direction=(0, 1))  # right
         flips += self._get_flips_in_direction(player, move, direction=(0, -1))  # left
@@ -125,6 +137,9 @@ class Board():
         return flips
 
     def _get_flips_in_direction(self, player, move, direction):
+        """
+        Return a list of tuples that represents stones (x,y positions) to flip in the direction.
+        """
         line = self._get_line_in_direction(player, move, direction)
         if not line:
             return []
@@ -139,7 +154,6 @@ class Board():
         """
         next_position = position[0]+direction[0], position[1]+direction[1]
         x, y = next_position
-
         if x not in range(8) or y not in range(8):
             return []
         cell = self.board[x][y]
@@ -163,6 +177,9 @@ class Board():
         self.remaining_round -= 1
 
     def get_player_score(self, player):
+        """
+        Returns the score of the player
+        """
         score = 0
         for y in range(8):
             for x in range(8):
@@ -171,6 +188,9 @@ class Board():
         return score
 
     def _nearest_corner(self, x, y):
+        """
+        Returns the nearest corner for the heuristic
+        """
         if x == 1: x = 0
         if x == 6: x = 7
         if y == 1: y = 0
@@ -179,6 +199,11 @@ class Board():
         return self.board[x][y]
 
     def get_player_score_with_heuristic(self, player, adversary, min_or_max):
+        """
+        Loop over all the board and calculate the score with more points if the point is in a corner,
+        because a corner cannot be taken later, and less points if it's near a corner
+        Returns the score of the player with heuristic.
+        """
         score = 0
         for y in range(8):
             for x in range(8):
@@ -200,6 +225,9 @@ class Board():
         return score
 
     def _start_with_max(self, player):
+        """
+        Returns a boolean that represents whether the min_max function should begin by max_value
+        """
         rep = False
         if player.cost_function == "max" or (player.cost_function=="hybrid" and self.remaining_round <= 15):
             rep = True
@@ -209,6 +237,11 @@ class Board():
             return rep
 
     def alpha_beta_search(self, player, adversary):
+        """
+        Implementation of the alpha beta algorithm
+        Check which parameter are applicable for the game
+        Returns the move found by the algorithm
+        """
         boardAlgo = Board()
         boardAlgo.board = copy.deepcopy(self.board)
         depth = player.depth
@@ -223,6 +256,10 @@ class Board():
         return moves[0]
 
     def max_value(self, player, adversary, alpha, beta, moves, cmpt, depth, heuristic):
+        """
+        Implementation of the max_value function of the min max algorithm
+        Return the utility, the max between alpha and the score of this branch of the tree, for the player
+        """
         if DEBUG: print(cmpt, cmpt*"    ", "Max", player.color, "alpha=", alpha, "beta=", beta)
 
         # If end of recursion/tree return evaluation function
@@ -254,6 +291,10 @@ class Board():
         return alpha
 
     def min_value(self, player, adversary, alpha, beta, moves, cmpt, depth, heuristic):
+        """
+        Implementation of the min_value function of the min max algorithm
+        Return the utility, the min between beta and the score of this branch of the tree, for the player
+        """
         if DEBUG: print(cmpt, cmpt*"    ", "min", player.color, "moves=", moves, "alpha=", alpha, "beta=", beta)
 
         # If end of recursion/tree return evaluation function
@@ -285,9 +326,15 @@ class Board():
         return beta
 
     def get_random_move(self, player):
+        """
+        Returns a random move that is valid for the player
+        """
         return random.choice(self._get_valid_moves(player))
 
     def print_valid_moves(self, player):
+        """
+        Print the moves that are allowed for the player
+        """
         moves = self._get_valid_moves(player)
         for move in moves:
             x, y = move
@@ -309,18 +356,28 @@ class Player():
         self.describe()
 
     def describe(self):
+        """
+        Print a description of the player
+        """
         print(f"\nPlayer {self.color} is {self.type}")
         if self.type == 'IA':
             print(f" Depth : {self.depth} (cst={self.cst_depth}) \n With heuristic : {self.heuristic} "
                   f"\n Pruning : {self.pruning} \n Cost function : {self.cost_function}")
 
     def inversePlayer(self, players):
+        """
+        Returns the adversary of the player
+        """
         if self == players[0]:
             return players[1]
         else:
             return players[0]
 
     def get_move(self):
+        """
+        Ask for the move of the human player and convert it to its board position if it has the good format
+        Returns the moves in the board format
+        """
         # Input move
         move = input( \
             f"Where will you play next, {self.color}? "
@@ -365,12 +422,18 @@ Score: {p0_score} vs. {p1_score}
         print(render)
 
     def _no_possible_move(self):
+        """
+        Returns True/False if there is/isn't a valid move for the two players
+        """
         if not (self.board.has_valid_moves(self.players[0])) and not (self.board.has_valid_moves(self.players[1])):
             return True
         else:
             return False
 
     def play(self, argv1, argv2):
+        """
+        Run the game and save it if SAVE is True
+        """
         move = None
         if SAVE:
             df = pd.DataFrame(columns=['Time', 'Color', 'Move', 'Black', 'White'])
@@ -423,6 +486,10 @@ Score: {p0_score} vs. {p1_score}
 
 
 def extract_player_option(str):
+    """
+    Take the string used to choose the type of player
+    Returns the corresponding options
+    """
     if str[0] == 'H' or str[0] == 'h':
         return 'H', None, None, None, None, False
     elif str[0] == 'R' or str[0] == 'r':
@@ -452,6 +519,9 @@ def extract_player_option(str):
 
 
 def help():
+    """
+    Print an explication of the arguments needed to play
+    """
     print("The program needs 2 arguments: py main.py [player_1] [player_2]")
     print("Where argument [player] is the parameters for player")
     print(" - 'H' : Human")
