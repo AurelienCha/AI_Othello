@@ -267,7 +267,7 @@ class Board():
             if heuristic:
                 return self.get_player_score_with_heuristic(player, adversary, 1)
             else:
-                return self.get_player_score(player)
+                return self.get_player_score(player) - self.get_player_score(adversary)
 
         # Loops over possibles moves
         for move in self._get_valid_moves(player):
@@ -302,7 +302,7 @@ class Board():
             if heuristic:
                 return self.get_player_score_with_heuristic(player, adversary, -1)
             else:
-                return self.get_player_score(player)
+                return self.get_player_score(player) - self.get_player_score(adversary)
 
         # Loops over possibles moves
         for move in self._get_valid_moves(player):
