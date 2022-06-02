@@ -483,6 +483,28 @@ Score: {p0_score} vs. {p1_score}
                 if not os.path.exists(filename):
                     df.to_csv(filename)
                     break
+        
+        self.print_result_end_game()
+
+    def print_result_end_game(self):
+        """
+        Print the result if the end of the game
+        """
+        print("   ================================")
+        print("   ================================")
+        self.players[0].describe()
+        self.players[1].describe()
+        print()
+        self._print()
+
+        print("        ===================")
+        if self.board.get_player_score(self.players[0]) > self.board.get_player_score(self.players[1]) :
+            print(f"        Winner is player { self.players[0].color}")
+        elif self.board.get_player_score(self.players[0]) < self.board.get_player_score(self.players[1]) :
+            print(f"        Winner is player { self.players[1].color}")
+        else:
+            print(f"             Nul match")
+        print("        ===================")
 
 
 def extract_player_option(str):
@@ -516,7 +538,6 @@ def extract_player_option(str):
         else: cost = 'hybrid'
 
         return 'IA', depth, cst_depth, pruning, cost, heuristic
-
 
 def help():
     """
