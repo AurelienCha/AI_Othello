@@ -6,7 +6,7 @@ import random
 import sys
 import time
 
-SAVE = True
+SAVE = False
 DEBUG = False
 INFINITY = 999999999
 
