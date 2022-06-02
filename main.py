@@ -410,7 +410,7 @@ class Game:
         """
         Prints the game: the header, notification(s) (if any) and the board
         """
-        header = "Reversi"
+        header = "\n\nReversi"
         p0 = self.players[0]
         p1 = self.players[1]
         p0_score = f"{p0.color}{'%2d' % self.board.get_player_score(p0)}"
