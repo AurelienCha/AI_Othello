@@ -24,7 +24,7 @@ poetry install
 Vous pouvez ensuite lancer le jeu dans l'environnement virtuel nouvellement créé.
 Le jeu en mode ia vs humain se lance comme ceci:
 ```bash
-poetry run python main.py 5 H
+poetry run python main.py [Player 1] [Player 2]
 ```
 Le programme a besoind e 2 arguments : Joueur_1 et joueur_2 qui correspondent aux parametres des joueurs 
  - 'H' : Humain
