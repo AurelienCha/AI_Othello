@@ -26,7 +26,7 @@ Le jeu en mode ia vs humain se lance comme ceci:
 ```bash
 poetry run python main.py [Player 1] [Player 2]
 ```
-Le programme a besoind e 2 arguments : Joueur_1 et joueur_2 qui correspondent aux parametres des joueurs 
+Le programme a besoin de 2 arguments : Joueur_1 et joueur_2 qui correspondent aux parametres des joueurs 
  - 'H' : Humain
  - 'R' : aléatoire
  - '\<depth\>' : AI où le "depth" représente la profondeur de l'arbre avec les paramètres optionnels : 
@@ -35,13 +35,8 @@ Le programme a besoind e 2 arguments : Joueur_1 et joueur_2 qui correspondent au
     - 'h' pour enlever l'heuristic
     - 'min' or 'max' pour specifier la strategie de capture ( par defaut : 'hybrid' min au debut, max à la fin)
 
-Pour lancer l'algorithm random contre une ia de profondeur 4 avec la profondeur qui augmente a la fin sans pruning ni heuristique et minimisant le nombre de pion capturer :
+Par exemple, pour lancer l'algorithm avec une IA random contre une IA de profondeur 4 avec la profondeur qui augmente a la fin sans pruning ni heuristique et minimisant le nombre de pion capturer :
 ```bash
 poetry run python main.py R 4+PHmin
 ```
-
-Une fois lancé, vous pouvez jouer vous même en encodant la position du pion dans le terminal; ou selectionner le type d'IA à utiliser.
-
-
-
 
